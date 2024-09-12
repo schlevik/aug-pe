@@ -10,11 +10,16 @@ all_feature_extractor = ["sentence-t5-xl", "sentence-t5-large", "sentence-t5-bas
                          "paraphrase-MiniLM-L6-v2",
                          "distilbert-base-nli-stsb-mean-tokens", "roberta-large-nli-stsb-mean-tokens"]
 
+data_files = {'pubmed': 'data/pubmed/train.csv',
+              'yelp': 'data/yelp/train.csv',
+              'openreview': 'data/openreview/iclr23_reviews_train.csv',
+              'cas': 'data/openreview/iclr23_reviews_train.csv'
+              }
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name_or_path", type=str,
                     default="stsb-roberta-base-v2", required=False)
 parser.add_argument("--dataset", type=str, default="yelp",
-                    choices=["yelp", "pubmed", "openreview"],
+                    choices=data_files.keys(),
                     required=False)
 
 args = parser.parse_args()
@@ -23,10 +28,6 @@ set_seed(seed=0, n_gpu=1)
 
 feature_extractor = args.model_name_or_path
 
-data_files = {'pubmed': 'data/pubmed/train.csv',
-              'yelp': 'data/yelp/train.csv',
-              'openreview': 'data/openreview/iclr23_reviews_train.csv'
-              }
 
 all_private_samples, all_private_labels, private_labels_counter, private_labels_indexer = load_data(
     dataset=args.dataset,

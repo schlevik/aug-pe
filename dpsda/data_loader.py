@@ -75,6 +75,37 @@ def load_dataset_with_special(data_file, gen):
 
 def load_data(dataset="yelp", data_file="data/yelp/train.csv", num_samples=-1, subsample_one_class=False, gen=False):
     print("data_file", data_file)
+    if dataset == 'cas':
+        raw_datasets = load_dataset('asus-aics/cas', name='cas_bigbio_text', data_dir='./data/bigbio-datasets', trust_remote_code=True)
+        print(raw_datasets['train'][:10])
+        def process(x):
+            x['labels'] = '|'.join(x['labels']) or "NoLabel"
+            return x
+        raw_datasets = raw_datasets.map(process)
+        print(raw_datasets['train'][:10])
+        # assert False
+        original_data = sample_dataset(raw_datasets['train'], raw_datasets, label_column_name='labels',
+                                       sample_size=num_samples, subsample_one_class=subsample_one_class)
+        print(original_data['train'][:10])
+        prompt_counter = collections.Counter()
+        label_column_index = ['labels']
+        prompt_idexer = collections.defaultdict(list)
+        for i, line in enumerate(original_data['train']):
+            prompt = "\t".join([line[idx] for idx in label_column_index])
+            prompt_counter[prompt] += 1
+
+            # if prompt not in prompt_idexer.keys():
+            #     prompt_idexer[prompt] = [i]
+            # else:
+            prompt_idexer[prompt].append(i)
+
+        train_data = [d for d in original_data['train']['text']]
+        train_labels = ["\t".join([line[idx] for idx in label_column_index])
+                        for line in original_data['train']]
+        print(train_data[:10])
+        print(train_labels[:10])
+        print(dict(prompt_idexer))
+        return train_data, train_labels, prompt_counter, dict(prompt_idexer)
     if dataset == "yelp":
         prompt_counter = collections.Counter()
         raw_datasets = load_dataset_with_special(data_file, gen)
