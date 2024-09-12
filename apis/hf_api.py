@@ -181,7 +181,6 @@ class HFAPI(API):
                 else:
                     full_prompt_text = prompt
                 print(full_prompt_text)
-                full_prompt_text = prompt
 
             prompt_input_ids = self.tokenizer(full_prompt_text)['input_ids']
             before_gen_length = len(full_prompt_text)
@@ -203,7 +202,8 @@ class HFAPI(API):
     def _generate_text(self, prompt, seq_num, max_length, batch_size, before_gen_length):
 
         all_data = []
-
+        print(self.tokenizer.decode(prompt))
+        assert False
         if seq_num < batch_size:
             batch_size = seq_num + 1  # TODO: improve
 
