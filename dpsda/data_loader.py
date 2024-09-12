@@ -76,7 +76,7 @@ def load_dataset_with_special(data_file, gen):
 def load_data(dataset="yelp", data_file="data/yelp/train.csv", num_samples=-1, subsample_one_class=False, gen=False):
     print("data_file", data_file)
     if dataset == 'cas':
-        raw_datasets = load_dataset('asus-aics/cas', name='cas_bigbio_text', data_dir='./data/bigbio-datasets', trust_remote_code=True)
+        raw_datasets = load_dataset('asus-aics/cas', name='cas_bigbio_text', data_dir=data_file, trust_remote_code=True)
         print(raw_datasets['train'][:10])
         def process(x):
             x['labels'] = '|'.join(x['labels']) or "NoLabel"

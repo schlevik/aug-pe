@@ -28,7 +28,7 @@ elif [ "$model_type" = "gpt2" ]; then
 else
     batch_size=8
 fi
-result_folder="result/yelp/${model_type}_${feat_ext}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
+result_folder="result/cas/${model_type}_${feat_ext}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
 
 ### load datacheckpoint 
 data_checkpoint_args=""
@@ -47,7 +47,8 @@ echo load data from ${data_checkpoint_args} ${args}
 
 ### run PE
 python main.py ${args} ${data_checkpoint_args} \
---train_data_file "data/yelp/train.csv" \
+--dataset cas \
+--train_data_file data/bigbio-datasets \
 --api ${api} \
 --noise ${noise} \
 --model_type ${model_type} \
@@ -55,7 +56,6 @@ python main.py ${args} ${data_checkpoint_args} \
 --length ${length} \
 --random_sampling_batch_size ${batch_size} \
 --variation_batch_size ${batch_size} \
---fp16 \
 --temperature ${temperature} \
 --select_syn_mode ${select_syn_mode} \
 --num_samples_schedule ${num_samples} \
@@ -71,4 +71,4 @@ python main.py ${args} ${data_checkpoint_args} \
 --variation_type ${var_type} \
 --result_folder ${result_folder} \
 --log_online \
---train_data_embeddings_file "result/embeddings/${feat_ext}/yelp_train_all.embeddings.npz" 
+--train_data_embeddings_file result/embeddings/sentence-t5-base/cas_train_all.embeddings.npz
