@@ -202,8 +202,6 @@ class HFAPI(API):
     def _generate_text(self, prompt, seq_num, max_length, batch_size, before_gen_length):
 
         all_data = []
-        print(self.tokenizer.decode(prompt))
-        assert False
         if seq_num < batch_size:
             batch_size = seq_num + 1  # TODO: improve
 
@@ -273,7 +271,7 @@ class HFAPI(API):
             prompt = "Please rephrase the following sentences {} as an abstract for medical research paper:\n{} \n".format(
                 selected_style, sequence)
         elif variation_type == 'cas_paraphrase':
-            prompt = "Please rephrase the following sentence in french\n{} \n".format(sequence)
+            prompt = "Veuillez reformuler la phrase suivante en français :\n{} \n".format(sequence)
         return prompt
 
     def _text_variation(self, sequences, labels, variation_degree, variation_type, batch_size):

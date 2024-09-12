@@ -1,5 +1,5 @@
 mlm_prob=0.5
-var_type="cas_paraphase"
+var_type="cas_paraphrase"
 feat_ext="sentence-t5-base"
 length=64
 temperature=1.4
@@ -24,7 +24,7 @@ if [ "$model_type" = "gpt2-large" ]; then
 elif [ "$model_type" = "gpt2-medium" ]; then
     batch_size=128
 elif [ "$model_type" = "gpt2" ]; then
-    batch_size=1024
+    batch_size=512
 else
     batch_size=8
 fi
