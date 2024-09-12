@@ -1,6 +1,6 @@
 mlm_prob=0.5
 var_type="cas_paraphase"
-feat_ext="stsb-roberta-base-v2"
+feat_ext="sentence-t5-base"
 length=64
 temperature=1.4
 num_seed_samples=5000
