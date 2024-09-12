@@ -1,5 +1,5 @@
 mlm_prob=0.5
-var_type="yelp_rephrase_tone"
+var_type="cas_paraphase"
 feat_ext="stsb-roberta-base-v2"
 length=64
 temperature=1.4
@@ -64,7 +64,6 @@ python main.py ${args} ${data_checkpoint_args} \
 --variation_degree_schedule ${mlm_prob} \
 --lookahead_degree ${lookahead_degree} \
 --epochs ${epochs} \
---use_subcategory \
 --feature_extractor ${feat_ext} \
 --feature_extractor_batch_size ${feature_extractor_batch_size} \
 --mlm_probability ${mlm_prob} \

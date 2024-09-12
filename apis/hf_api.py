@@ -82,7 +82,7 @@ class HFAPI(API):
             '--variation_type',
             type=str,
             default='rephrase',
-            choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone",
+            choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone", "cas_paraphase"
                      ],
             help='Which image feature extractor to use')
         parser.add_argument("--mlm_probability", type=float, default=0.5)
@@ -167,6 +167,20 @@ class HFAPI(API):
                     full_prompt_text = "Using a variety of sentence structures, write an abstract for a medical research paper: "
 
             else:
+                if "cas" in self.variation_type:
+                    full_prompt_text = "Écrivez une phrase en français tirée d'un essai clinique. "
+                    if prompt == 'NoLabel':
+                        full_prompt_text += "Elle ne doit contenir aucune négation ni aucune spéculation"
+                    elif prompt == 'negation':
+                        full_prompt_text += " Elle doit contenir une négation mais aucune spéculation"
+                    elif prompt == 'speculation':
+                        full_prompt_text += "Écrivez une phrase en français tirée d'un essai clinique. Elle ne doit contenir aucune négation mais des spéculations"
+                    else:
+                       full_prompt_text += "Écrivez une phrase en français tirée d'un essai clinique. Elle doit contenir des négations et des spéculations"
+                    full_prompt_text += ":"
+                else:
+                    full_prompt_text = prompt
+                print(full_prompt_text)
                 full_prompt_text = prompt
 
             prompt_input_ids = self.tokenizer(full_prompt_text)['input_ids']
@@ -258,7 +272,8 @@ class HFAPI(API):
                 len(ALL_PUBMED_styles))]
             prompt = "Please rephrase the following sentences {} as an abstract for medical research paper:\n{} \n".format(
                 selected_style, sequence)
-
+        elif variation_type == 'cas_paraphrase':
+            prompt = "Please rephrase the following sentence in french\n{} \n".format(sequence)
         return prompt
 
     def _text_variation(self, sequences, labels, variation_degree, variation_type, batch_size):
