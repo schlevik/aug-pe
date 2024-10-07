@@ -278,7 +278,7 @@ Insomnia sufferer""".split()
 
     def _rephrase(self, label, sequence, variation_type):
 
-        if variation_type == "yelp_rephrase_tone":
+        if variation_type == "yelp_rephrase_tone" or variation_type == "":
             selected_style = ALL_styles[random.randrange(len(ALL_styles))]
             prompt = "Based on {}, please rephrase the following sentences {}:\n{} \n".format(
                 label, selected_style, sequence)

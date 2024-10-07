@@ -1,5 +1,5 @@
 mlm_prob=0.5
-var_type="yelp_rephrase_tone"
+var_type="psytar_rephrase_tone"
 feat_ext="sentence-t5-base"
 length=64
 temperature=1.4
