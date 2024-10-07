@@ -13,7 +13,8 @@ all_feature_extractor = ["sentence-t5-xl", "sentence-t5-large", "sentence-t5-bas
 data_files = {'pubmed': 'data/pubmed/train.csv',
               'yelp': 'data/yelp/train.csv',
               'openreview': 'data/openreview/iclr23_reviews_train.csv',
-              'cas': 'data/bigbio-datasets/'
+              'cas': 'data/bigbio-datasets/',
+              'psytar': 'data/bigbio-datasets/',
               }
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name_or_path", type=str,

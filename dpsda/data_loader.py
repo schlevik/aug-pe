@@ -75,18 +75,18 @@ def load_dataset_with_special(data_file, gen):
 
 def load_data(dataset="yelp", data_file="data/yelp/train.csv", num_samples=-1, subsample_one_class=False, gen=False):
     print("data_file", data_file)
-    if dataset == 'cas':
-        raw_datasets = load_dataset('asus-aics/cas', name='cas_bigbio_text', data_dir=data_file, trust_remote_code=True)
-        print(raw_datasets['train'][:10])
+    if dataset == 'cas' or dataset == 'psytar':
+        raw_datasets = load_dataset(f'asus-aics/{dataset}', name=f'{dataset}_bigbio_text', data_dir=data_file, trust_remote_code=True)
+        print(raw_datasets['train'][:3])
         def process(x):
             x['labels'] = '|'.join(x['labels']) or "NoLabel"
             return x
         raw_datasets = raw_datasets.map(process)
-        print(raw_datasets['train'][:10])
+        print(raw_datasets['train'][:3])
         # assert False
         original_data = sample_dataset(raw_datasets['train'], raw_datasets, label_column_name='labels',
                                        sample_size=num_samples, subsample_one_class=subsample_one_class)
-        print(original_data['train'][:10])
+        print(original_data['train'][:3])
         prompt_counter = collections.Counter()
         label_column_index = ['labels']
         prompt_idexer = collections.defaultdict(list)
@@ -102,10 +102,11 @@ def load_data(dataset="yelp", data_file="data/yelp/train.csv", num_samples=-1, s
         train_data = [d for d in original_data['train']['text']]
         train_labels = ["\t".join([line[idx] for idx in label_column_index])
                         for line in original_data['train']]
-        print(train_data[:10])
-        print(train_labels[:10])
-        print(dict(prompt_idexer))
+        print(train_data[:3])
+        print(train_labels[:3])
+        # print(dict(prompt_idexer))
         return train_data, train_labels, prompt_counter, dict(prompt_idexer)
+   
     if dataset == "yelp":
         prompt_counter = collections.Counter()
         raw_datasets = load_dataset_with_special(data_file, gen)

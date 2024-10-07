@@ -18,6 +18,9 @@ case $1 in
   --cas)
     python pre_comp_emb.py --dataset cas --model_name_or_path 'sentence-t5-base'
     ;;
+  --psytar)
+    python pre_comp_emb.py --dataset psytar --model_name_or_path 'sentence-t5-base'
+    ;;
   --yelp)
     python pre_comp_emb.py --dataset yelp --model_name_or_path 'stsb-roberta-base-v2'
     ;;
