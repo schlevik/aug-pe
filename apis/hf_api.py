@@ -201,7 +201,7 @@ Insomnia sufferer""".splitlines()
                         "WD": "Withdrowal Symptoms"
                     }
                     style = random.choice(styles)
-                    full_prompt_text = f"Suppose you're a {style}. Write a one-sentence medication review that mentions the following adverse drug reactions: {', '.join(label_map[l] for l in labels)}"
+                    full_prompt_text = f"Suppose you're a {style}. Write a one-sentence medication review that mentions the following adverse drug reactions: {', '.join(label_map.get(l, 'No reactions.') for l in labels)}"
                 print(full_prompt_text)
 
             prompt_input_ids = self.tokenizer(full_prompt_text)['input_ids']
