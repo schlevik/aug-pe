@@ -86,7 +86,6 @@ def load_data(dataset="yelp", data_file="data/yelp/train.csv", num_samples=-1, s
             return x
         raw_datasets = raw_datasets.map(process)
         print(raw_datasets['train'][:3])
-        # assert False
         original_data = sample_dataset(raw_datasets['train'], raw_datasets, label_column_name='labels',
                                        sample_size=num_samples, subsample_one_class=subsample_one_class)
         print(original_data['train'][:3])
@@ -108,7 +107,6 @@ def load_data(dataset="yelp", data_file="data/yelp/train.csv", num_samples=-1, s
         print(train_data[:3])
         print(train_labels[:3])
         print(prompt_idexer.keys())
-        assert False
         # print(dict(prompt_idexer))
         return train_data, train_labels, prompt_counter, dict(prompt_idexer)
    
