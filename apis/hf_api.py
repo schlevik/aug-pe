@@ -82,7 +82,7 @@ class HFAPI(API):
             '--variation_type',
             type=str,
             default='rephrase',
-            choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone", "cas_paraphrase"
+            choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone", "cas_paraphrase", 'psytar_rephrase_tone'
                      ],
             help='Which image feature extractor to use')
         parser.add_argument("--mlm_probability", type=float, default=0.5)
