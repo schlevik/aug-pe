@@ -178,8 +178,30 @@ class HFAPI(API):
                     else:
                        full_prompt_text += "Écrivez une phrase en français tirée d'un essai clinique. Elle doit contenir des négations et des spéculations"
                     full_prompt_text += ":"
-                else:
-                    full_prompt_text = prompt
+                elif 'psytar' in self.variation_type:
+                    labels = prompt.split("|")
+                    styles = """Chronic patient
+New parent
+Senior reviewer
+Allergy sufferer
+Prescription user
+Healthcare professional
+Migraine patient
+Fitness enthusiast
+Mental health patient
+Insomnia sufferer""".split()
+
+                    label_map = {
+                        "ADR": "Adverse Drug Reaction",
+                        "DI": "Drug Indications",
+                        "EF": "Drug Effectiveness",
+                        "INF": "Drug Ineffeciveness",
+                        "Others": "Others",
+                        "SSI": "Sign/Symptoms/Illness",
+                        "WD": "Withdrowal Symptoms"
+                    }
+                    style = random.choice(styles)
+                    full_prompt_text = f"Suppose you're a {style}. Write a one-sentence medication review that mentions the following adverse drug reactions: {', '.join(l for l in labels)}"
                 print(full_prompt_text)
 
             prompt_input_ids = self.tokenizer(full_prompt_text)['input_ids']
@@ -272,6 +294,8 @@ class HFAPI(API):
                 selected_style, sequence)
         elif variation_type == 'cas_paraphrase':
             prompt = "Veuillez reformuler la phrase suivante en français :\n{} \n".format(sequence)
+        # elif variation_type == 'psytar_paraphrase':
+        #     prompt = "Veuillez reformuler la phrase suivante en français :\n{} \n".format(sequence)
         return prompt
 
     def _text_variation(self, sequences, labels, variation_degree, variation_type, batch_size):

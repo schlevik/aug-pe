@@ -1,5 +1,5 @@
 mlm_prob=0.5
-var_type="cas_paraphrase"
+var_type="yelp_rephrase_tone"
 feat_ext="sentence-t5-base"
 length=64
 temperature=1.4
@@ -28,7 +28,7 @@ elif [ "$model_type" = "gpt2" ]; then
 else
     batch_size=8
 fi
-result_folder="result/cas/${model_type}_${feat_ext}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
+result_folder="result/psytar/${model_type}_${feat_ext}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
 
 ### load datacheckpoint 
 data_checkpoint_args=""
@@ -70,4 +70,4 @@ python main.py ${args} ${data_checkpoint_args} \
 --variation_type ${var_type} \
 --result_folder ${result_folder} \
 --log_online \
---train_data_embeddings_file result/embeddings/sentence-t5-base/cas_train_all.embeddings.npz
+--train_data_embeddings_file result/embeddings/sentence-t5-base/psytar_train_all.embeddings.npz

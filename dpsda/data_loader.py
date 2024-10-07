@@ -104,6 +104,8 @@ def load_data(dataset="yelp", data_file="data/yelp/train.csv", num_samples=-1, s
                         for line in original_data['train']]
         print(train_data[:3])
         print(train_labels[:3])
+        print(prompt_idexer.keys())
+        assert False
         # print(dict(prompt_idexer))
         return train_data, train_labels, prompt_counter, dict(prompt_idexer)
    
