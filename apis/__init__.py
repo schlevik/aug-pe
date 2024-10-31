@@ -1,6 +1,5 @@
 from .api import API
 
-
 def get_api_class_from_name(name):
     # Lazy import to improve loading speed and reduce libary dependency.
     if name == 'HFGPT':

@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import logging
 from .api import API
+from apis.biomed import get_prompt
 import transformers
 import random
 from .utils import set_seed, get_subcategories, ALL_styles, ALL_OPENREVIEW_styles, ALL_PUBMED_styles
@@ -50,14 +51,18 @@ class HFAPI(API):
         model_name_or_path = self.model_type
 
         self.tokenizer = transformers.AutoTokenizer.from_pretrained(
-            model_name_or_path, device_map="auto")
+            model_name_or_path, device_map="auto", padding_side='left')
         self.tokenizer.pad_token = self.tokenizer.eos_token
         self.tokenizer.padding_side = "left"
 
         if "gpt2" not in self.model_type:
             # use torch.float16 for large LLMs
-            self.model = transformers.AutoModelForCausalLM.from_pretrained(
-                model_name_or_path, device_map="auto", torch_dtype=torch.float16)
+            try:
+                self.model = transformers.AutoModelForCausalLM.from_pretrained(
+                    model_name_or_path, device_map="auto", torch_dtype=torch.bfloat16)
+            except ValueError:
+                self.model = transformers.AutoModelForCausalLM.from_pretrained(
+                    model_name_or_path, device_map="cuda", torch_dtype=torch.bfloat16)
         else:
             pad_token_id = self.tokenizer.pad_token_id if self.tokenizer.pad_token_id else self.tokenizer.eos_token_id
             self.model = transformers.AutoModelForCausalLM.from_pretrained(
@@ -82,7 +87,8 @@ class HFAPI(API):
             '--variation_type',
             type=str,
             default='rephrase',
-            choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone", "cas_paraphrase", 'psytar_rephrase_tone'
+            choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone", "cas_paraphrase", 'psytar_rephrase_tone',
+                     'hallmarks_of_cancer_rephrase_tone'
                      ],
             help='Which image feature extractor to use')
         parser.add_argument("--mlm_probability", type=float, default=0.5)
@@ -179,39 +185,19 @@ class HFAPI(API):
                        full_prompt_text += "Écrivez une phrase en français tirée d'un essai clinique. Elle doit contenir des négations et des spéculations"
                     full_prompt_text += ":"
                 elif 'psytar' in self.variation_type:
-                    labels = prompt.split("|")
-                    styles = """Chronic patient
-New parent
-Senior reviewer
-Allergy sufferer
-Prescription user
-Healthcare professional
-Migraine patient
-Fitness enthusiast
-Mental health patient
-Insomnia sufferer""".splitlines()
-
-                    label_map = {
-                        "ADR": "Adverse Drug Reaction",
-                        "DI": "Drug Indications",
-                        "EF": "Drug Effectiveness",
-                        "INF": "Drug Ineffeciveness",
-                        "Others": "Others",
-                        "SSI": "Sign/Symptoms/Illness",
-                        "WD": "Withdrowal Symptoms"
-                    }
-                    style = random.choice(styles)
-                    full_prompt_text = f"Suppose you're a {style}. Write a one-sentence medication review that mentions the following adverse drug reactions: {', '.join(label_map.get(l, 'No reactions.') for l in labels)}"
+                    full_prompt_text = get_prompt(prompt, 'psytar')
+                elif 'hallmarks_of_cancer' in self.variation_type:
+                    full_prompt_text = get_prompt(prompt, 'hallmarks_of_cancer')
                 print(full_prompt_text)
-
-            prompt_input_ids = self.tokenizer(full_prompt_text)['input_ids']
+            inputs = self.tokenizer(full_prompt_text, return_tensors='pt')
+            prompt_input_ids = inputs['input_ids']
+            prompt_attn_mask = inputs['attention_mask']
             before_gen_length = len(full_prompt_text)
-
             if num_seq_to_generate > 0:
                 # condition on the prompt
                 sequences = self._generate_text(prompt_input_ids, num_seq_to_generate,
                                                 max_length=self.length, batch_size=self.random_sampling_batch_size,
-                                                before_gen_length=before_gen_length)
+                                                before_gen_length=before_gen_length, prompt_attn_mask=prompt_attn_mask)
                 all_sequences += sequences
             all_prefix_prompts += [full_prompt_text] * num_seq_to_generate
             additional_info += [prompt] * num_seq_to_generate
@@ -221,7 +207,7 @@ Insomnia sufferer""".splitlines()
         torch.cuda.empty_cache()
         return all_sequences,  additional_info, sync_labels_counter, all_prefix_prompts
 
-    def _generate_text(self, prompt, seq_num, max_length, batch_size, before_gen_length):
+    def _generate_text(self, prompt, seq_num, max_length, batch_size, before_gen_length, prompt_attn_mask=None):
 
         all_data = []
         if seq_num < batch_size:
@@ -234,9 +220,12 @@ Insomnia sufferer""".splitlines()
             else:
                 input_ids = torch.tensor(prompt).repeat(
                     batch_size, 1).to(self.device)
+                attn_mask = torch.tensor(prompt_attn_mask).repeat(
+                    batch_size, 1).to(self.device)
                 with torch.no_grad():
                     output_sequences = self.model.generate(
                         input_ids=input_ids,
+                        attention_mask=attn_mask,
                         max_new_tokens=max_length,
                         temperature=self.temperature,
                         top_k=self.k,
@@ -287,7 +276,7 @@ Insomnia sufferer""".splitlines()
                 len(ALL_OPENREVIEW_styles))]
             prompt = "Based on {}, please rephrase the following sentences {} as a paper review:\n{} \n".format(
                 label, selected_style, sequence)
-        elif variation_type == "pubmed_rephrase_tone":
+        elif variation_type == "pubmed_rephrase_tone" or variation_type == 'hallmarks_of_cancer_rephrase_tone':
             selected_style = ALL_PUBMED_styles[random.randrange(
                 len(ALL_PUBMED_styles))]
             prompt = "Please rephrase the following sentences {} as an abstract for medical research paper:\n{} \n".format(
@@ -328,8 +317,9 @@ Insomnia sufferer""".splitlines()
                 batch_labels.append(labels[idx])
 
             with torch.no_grad():
-                input_ids = self.tokenizer(batch_prompt, padding=True, return_tensors='pt')[
-                    'input_ids'].to(self.device)  # has been padded into the same lens; cannot be used
+                batch_inputs = self.tokenizer(batch_prompt, padding=True, return_tensors='pt')
+                input_ids = batch_inputs['input_ids'].to(self.device)  # has been padded into the same lens; cannot be used
+                attention_mask = batch_inputs['attention_mask'].to(self.device)  # has been padded into the same lens; cannot be used
                 beam_output = self.model.generate(input_ids,
                                                   max_new_tokens=self.length,
                                                   temperature=self.temperature,
@@ -340,6 +330,7 @@ Insomnia sufferer""".splitlines()
                                                   do_sample=self.do_sample,
                                                   num_return_sequences=1,
                                                   no_repeat_ngram_size=2,
+                                                  attention_mask=attention_mask
                                                   )
                 # TODO:   skip the tokens so the lens of input_ids is diff from batch_prompt
                 generated_sequences = self.tokenizer.batch_decode(

@@ -19,13 +19,16 @@ case $1 in
     python pre_comp_emb.py --dataset cas --model_name_or_path 'sentence-t5-base'
     ;;
   --psytar)
-    python pre_comp_emb.py --dataset psytar --model_name_or_path 'sentence-t5-base'
+    python pre_comp_emb.py --dataset cls/psytar --model_name_or_path 'kamalkraj/BioSimCSE-BioLinkBERT-BASE'
+    ;;
+  --hallmarks_of_cancer)
+    python pre_comp_emb.py --dataset cls/hallmarks_of_cancer --model_name_or_path 'kamalkraj/BioSimCSE-BioLinkBERT-BASE'
     ;;
   --yelp)
     python pre_comp_emb.py --dataset yelp --model_name_or_path 'stsb-roberta-base-v2'
     ;;
   *)
-    echo "Invalid dataset. Available datasets are: --openreview, --pubmed, --yelp"
+    echo "Invalid dataset. Available datasets are: --openreview, --pubmed, --yelp, --psytar, --hallmarks_of_cancer"
     exit 1
     ;;
 esac

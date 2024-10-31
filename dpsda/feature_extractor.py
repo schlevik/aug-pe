@@ -12,7 +12,7 @@ def extract_features(
         model_name="all-mpnet-base-v2"):
     # If available, the model is automatically executed on the GPU. You can specify the device for the model like this:
 
-    model = SentenceTransformer(model_name)  # device='cuda',
+    model = SentenceTransformer(model_name) #,model_kwargs=dict(attn_implementation="eager"))  # device='cuda',
     model.eval()
 
     with torch.no_grad():

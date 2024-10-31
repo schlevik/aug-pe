@@ -5,6 +5,8 @@ from dpsda.data_loader import load_data
 import argparse
 from apis.utils import set_seed
 
+
+
 all_feature_extractor = ["sentence-t5-xl", "sentence-t5-large", "sentence-t5-base",
                          "all-MiniLM-L6-v2",  "all-mpnet-base-v2",
                          "paraphrase-MiniLM-L6-v2",
@@ -14,7 +16,8 @@ data_files = {'pubmed': 'data/pubmed/train.csv',
               'yelp': 'data/yelp/train.csv',
               'openreview': 'data/openreview/iclr23_reviews_train.csv',
               'cas': 'data/bigbio-datasets/',
-              'psytar': 'data/bigbio-datasets/',
+              'cls/psytar': '../../data/cls/psytar/original/train-original.jsonl',
+              'cls/hallmarks_of_cancer': '../../data/cls/hallmarks_of_cancer/original/train-original.jsonl',
               }
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name_or_path", type=str,
@@ -42,7 +45,7 @@ all_private_features = extract_features(
 )
 
 log_embeddings(all_private_features, all_private_labels[:len(all_private_features)],
-               os.path.join('result', 'embeddings', feature_extractor), fname=f'{args.dataset}_train_all')
+               os.path.join('result', 'embeddings', feature_extractor.replace('/', '_')), fname=f"{args.dataset.replace('/', '_')}_train_all")
 
 
 print("finished!")
