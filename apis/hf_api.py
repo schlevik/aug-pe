@@ -17,7 +17,7 @@ class HFAPI(API):
                  output_dir, seed, mlm_probability,
                  length, temperature, top_k, top_p, repetition_penalty, do_sample, fp16, no_cuda,
                  random_sampling_batch_size, num_beams, dry_run,
-                 variation_batch_size,
+                 variation_batch_size, apply_template,
                  *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -39,6 +39,7 @@ class HFAPI(API):
         self.n_gpu = 0 if self.no_cuda else torch.cuda.device_count()
         set_seed(seed=seed, n_gpu=self.n_gpu)
         self.dry_run = dry_run
+        self.apply_template = apply_template
 
         self.use_subcategory = use_subcategory
         if use_subcategory:
@@ -128,7 +129,10 @@ class HFAPI(API):
         )
         parser.add_argument("--no_cuda", action="store_true",
                             help="Avoid using CUDA when available")
-
+        
+        parser.add_argument("--apply_template", action="store_true",
+                            help="Whether to apply a chat template.")
+        print(parser)
         return parser
 
     def text_random_sampling(self, num_samples, prompt_counter=None, lens_dict=None):
@@ -188,9 +192,29 @@ class HFAPI(API):
                     full_prompt_text = get_prompt(prompt, 'psytar')
                 elif 'hallmarks_of_cancer' in self.variation_type:
                     full_prompt_text = get_prompt(prompt, 'hallmarks_of_cancer')
-                print(full_prompt_text)
+                
+            if self.apply_template:
+                if self.tokenizer.get_chat_template():
+                    full_prompt_text = self.tokenizer.apply_chat_template(
+                        conversation=[
+                            {
+                                "role": "system",
+                                "content": "You are a helpful text generator. Follow the request precisely."
+                                "Please don't add anything to your reply other than the requested text to generate.",
+                            },
+                            {"role": "user", "content": full_prompt_text},
+                        ],
+                        add_generation_prompt=True,
+                        tokenize=False
+                    )
+                else:
+                    print("Don't have template for this model!")
+            print(full_prompt_text)    
             inputs = self.tokenizer(full_prompt_text, return_tensors='pt')
+            print(inputs)
             prompt_input_ids = inputs['input_ids']
+            print(self.tokenizer.batch_decode(prompt_input_ids))
+            # assert False
             prompt_attn_mask = inputs['attention_mask']
             before_gen_length = len(full_prompt_text)
             if num_seq_to_generate > 0:
@@ -198,6 +222,7 @@ class HFAPI(API):
                 sequences = self._generate_text(prompt_input_ids, num_seq_to_generate,
                                                 max_length=self.length, batch_size=self.random_sampling_batch_size,
                                                 before_gen_length=before_gen_length, prompt_attn_mask=prompt_attn_mask)
+                print(sequences)
                 all_sequences += sequences
             all_prefix_prompts += [full_prompt_text] * num_seq_to_generate
             additional_info += [prompt] * num_seq_to_generate
@@ -218,9 +243,9 @@ class HFAPI(API):
             if self.dry_run:
                 generated_sequences = ["s" * max_length] * batch_size
             else:
-                input_ids = torch.tensor(prompt).repeat(
+                input_ids = prompt.repeat(
                     batch_size, 1).to(self.device)
-                attn_mask = torch.tensor(prompt_attn_mask).repeat(
+                attn_mask = prompt_attn_mask.repeat(
                     batch_size, 1).to(self.device)
                 with torch.no_grad():
                     output_sequences = self.model.generate(
@@ -313,6 +338,19 @@ class HFAPI(API):
             for idx in range(start_idx, end_idx):
                 prompt = self._rephrase(
                     labels[idx], sequences[idx], variation_type)
+                if self.apply_template:
+                    prompt = self.tokenizer.apply_chat_template(
+                        conversation=[
+                            {
+                                "role": "system",
+                                "content": "You are a helpful text rephraser. Follow the request precisely."
+                                "Please don't include anything in your reply other than the requested text to rephrase.",
+                            },
+                            {"role": "user", "content": prompt},
+                        ],
+                        add_generation_prompt=True,
+                        tokenize=False
+                    )
                 batch_prompt.append(prompt)
                 batch_labels.append(labels[idx])
 
@@ -339,6 +377,7 @@ class HFAPI(API):
                 seq = generated_sequences[idx]
                 seq = " ".join(seq.split())
                 lab = batch_labels[idx].strip().split("\t")
+                print(seq)
                 if seq:
                     all_data.append(seq)  # no lables!
                 else:
