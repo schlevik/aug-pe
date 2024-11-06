@@ -19,7 +19,7 @@ case $1 in
     python pre_comp_emb.py --dataset cas --model_name_or_path 'sentence-t5-base'
     ;;
   --psytar)
-    python pre_comp_emb.py --dataset cls/psytar --model_name_or_path 'kamalkraj/BioSimCSE-BioLinkBERT-BASE'
+    python pre_comp_emb.py --dataset cls/psytar --model_name_or_path 'sentence-t5-base'
     ;;
   --hallmarks_of_cancer)
     python pre_comp_emb.py --dataset cls/hallmarks_of_cancer --model_name_or_path 'kamalkraj/BioSimCSE-BioLinkBERT-BASE'
