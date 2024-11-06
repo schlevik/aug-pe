@@ -310,8 +310,8 @@ class HFAPI(API):
                 "WD": "Withdrowal Symptoms"
            }
             selected_style = ALL_styles[random.randrange(len(ALL_styles))]
-            prompt = "Based on {}, please rephrase the following sentences {}:\n{} \n".format(
-                ', '.join(label_map[l] for l in label.split("|")), selected_style, sequence)
+            prompt = "Mentioning {}, please rephrase the following sentences {}:\n{} \n".format(
+                ', '.join(label_map.get(l, 'no speficic condition') for l in label.split("|")), selected_style, sequence)
         
         elif variation_type == "openreview_rephrase_tone":
             selected_style = ALL_OPENREVIEW_styles[random.randrange(

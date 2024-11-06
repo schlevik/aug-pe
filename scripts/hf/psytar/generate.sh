@@ -52,7 +52,7 @@ echo load data from ${data_checkpoint_args} ${args}
 
 for noise in "0" "20.98" "11.19" "6.01" "3.28"; do 
     echo "Noise level ${noise}."
-    result_folder="result/psytar/${model_type}_${feat_ext}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
+    result_folder="result/psytar/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
     echo $result_folder
     ### run PE
     python main.py ${args} ${data_checkpoint_args} \
