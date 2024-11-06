@@ -4,6 +4,7 @@ feat_ext="sentence-t5-base"
 length=64
 temperature=1.4
 num_seed_samples=728
+# num_seed_samples=5
 lookahead_degree=0
 k=6 # number of variations
 L=$((k+1))

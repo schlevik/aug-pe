@@ -226,7 +226,6 @@ class HFAPI(API):
                 sequences = self._generate_text(prompt_input_ids, num_seq_to_generate,
                                                 max_length=self.length, batch_size=self.random_sampling_batch_size,
                                                 before_gen_length=before_gen_length, prompt_attn_mask=prompt_attn_mask)
-                print(sequences)
                 all_sequences += sequences
             all_prefix_prompts += [full_prompt_text] * num_seq_to_generate
             additional_info += [prompt] * num_seq_to_generate
@@ -401,7 +400,6 @@ class HFAPI(API):
                 seq = generated_sequences[idx]
                 seq = " ".join(seq.split())
                 lab = batch_labels[idx].strip().split("\t")
-                print(seq)
                 if seq:
                     all_data.append(seq)  # no lables!
                 else:
