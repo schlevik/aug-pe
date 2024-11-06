@@ -296,10 +296,24 @@ class HFAPI(API):
 
     def _rephrase(self, label, sequence, variation_type):
 
-        if variation_type == "yelp_rephrase_tone" or variation_type == "psytar_rephrase_tone":
+        if variation_type == "yelp_rephrase_tone":
             selected_style = ALL_styles[random.randrange(len(ALL_styles))]
             prompt = "Based on {}, please rephrase the following sentences {}:\n{} \n".format(
                 label, selected_style, sequence)
+        elif variation_type == 'psytar_rephrase_tone':
+            label_map = {
+                "ADR": "Adverse Drug Reaction",
+                "DI": "Drug Indications",
+                "EF": "Drug Effectiveness",
+                "INF": "Drug Ineffeciveness",
+                "Others": "Others",
+                "SSI": "Sign/Symptoms/Illness",
+                "WD": "Withdrowal Symptoms"
+           }
+            selected_style = ALL_styles[random.randrange(len(ALL_styles))]
+            prompt = "Based on {}, please rephrase the following sentences {}:\n{} \n".format(
+                ', '.join(label_map[l] for l in label.split("|")), selected_style, sequence)
+        
         elif variation_type == "openreview_rephrase_tone":
             selected_style = ALL_OPENREVIEW_styles[random.randrange(
                 len(ALL_OPENREVIEW_styles))]

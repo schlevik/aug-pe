@@ -78,5 +78,6 @@ for noise in "0" "20.98" "11.19" "6.01" "3.28"; do
     --variation_type ${var_type} \
     --result_folder ${result_folder} \
     --log_online \
+    --apply_template \
     --train_data_embeddings_file result/embeddings/sentence-t5-base/cls_psytar_train_all.embeddings.npz
 done
