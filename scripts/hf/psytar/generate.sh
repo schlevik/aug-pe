@@ -10,7 +10,7 @@ L=$((k+1))
 init_L=${L}
 num_samples=$((L*num_seed_samples))
 echo generating $num_samples samples
-epochs=20
+epochs=10
 word_var_scale=0
 select_syn_mode=rank
 # model_type=gpt2
