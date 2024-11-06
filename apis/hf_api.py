@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import logging
 from .api import API
-from apis.biomed import get_prompt
+from apis.biomed import get_prompt, ALL_MIMIC_TONES
 import transformers
 import random
 from .utils import set_seed, get_subcategories, ALL_styles, ALL_OPENREVIEW_styles, ALL_PUBMED_styles
@@ -89,7 +89,7 @@ class HFAPI(API):
             type=str,
             default='rephrase',
             choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone", "cas_paraphrase", 'psytar_rephrase_tone',
-                     'hallmarks_of_cancer_rephrase_tone'
+                     'hallmarks_of_cancer_rephrase_tone', "mimic_rephrase_tone"
                      ],
             help='Which image feature extractor to use')
         parser.add_argument("--mlm_probability", type=float, default=0.5)
@@ -192,7 +192,10 @@ class HFAPI(API):
                     full_prompt_text = get_prompt(prompt, 'psytar')
                 elif 'hallmarks_of_cancer' in self.variation_type:
                     full_prompt_text = get_prompt(prompt, 'hallmarks_of_cancer')
-                
+                elif 'mimic' in self.variation_type:
+                    full_prompt_text = get_prompt(prompt, 'mimic')
+                else:
+                    raise NotImplementedError(f"Unknown variation type: {self.variation_type}")
             if self.apply_template:
                 if self.tokenizer.get_chat_template():
                     full_prompt_text = self.tokenizer.apply_chat_template(
@@ -203,18 +206,19 @@ class HFAPI(API):
                                 "Please don't add anything to your reply other than the requested text to generate.",
                             },
                             {"role": "user", "content": full_prompt_text},
+                            {"role": "assistant", "content": "Here is the requested text:"}
                         ],
-                        add_generation_prompt=True,
+                        add_generation_prompt=False,
                         tokenize=False
                     )
+                    full_prompt_text = full_prompt_text.rsplit("<|eot_id|>",1)[0]
                 else:
                     print("Don't have template for this model!")
-            print(full_prompt_text)    
+            print(full_prompt_text)
             inputs = self.tokenizer(full_prompt_text, return_tensors='pt')
             print(inputs)
             prompt_input_ids = inputs['input_ids']
             print(self.tokenizer.batch_decode(prompt_input_ids))
-            # assert False
             prompt_attn_mask = inputs['attention_mask']
             before_gen_length = len(full_prompt_text)
             if num_seq_to_generate > 0:
@@ -310,6 +314,10 @@ class HFAPI(API):
             prompt = "Veuillez reformuler la phrase suivante en français :\n{} \n".format(sequence)
         # elif variation_type == 'psytar_paraphrase':
         #     prompt = "Veuillez reformuler la phrase suivante en français :\n{} \n".format(sequence)
+        elif variation_type == 'mimic_paraphrase':
+            selected_style = random.choice(ALL_MIMIC_TONES)
+            prompt = f"Keeping the information about {label.replace('|', ', ')}, rephrase the note in the following style: {selected_style}"
+        print(prompt)
         return prompt
 
     def _text_variation(self, sequences, labels, variation_degree, variation_type, batch_size):
@@ -347,10 +355,12 @@ class HFAPI(API):
                                 "Please don't include anything in your reply other than the requested text to rephrase.",
                             },
                             {"role": "user", "content": prompt},
+                            {"role": "assistant", "content": "Here is the rewritten text:"}
                         ],
                         add_generation_prompt=True,
                         tokenize=False
                     )
+                    prompt = prompt.rsplit("<|eot_id|>",1)[0]
                 batch_prompt.append(prompt)
                 batch_labels.append(labels[idx])
 

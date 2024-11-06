@@ -27,6 +27,9 @@ case $1 in
   --yelp)
     python pre_comp_emb.py --dataset yelp --model_name_or_path 'stsb-roberta-base-v2'
     ;;
+  --mimic)
+    python pre_comp_emb.py --dataset cls/mimic --model_name_or_path 'kamalkraj/BioSimCSE-BioLinkBERT-BASE'
+    ;;
   *)
     echo "Invalid dataset. Available datasets are: --openreview, --pubmed, --yelp, --psytar, --hallmarks_of_cancer"
     exit 1

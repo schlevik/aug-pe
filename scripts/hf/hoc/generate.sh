@@ -55,7 +55,8 @@ fi
 # noise=11.76 # e=1
 # noise=6.28 # e=2
 # noise=3.41 # e=4 
-for noise in "0" "22.16" "11.76" "6.28" "3.41"; do 
+# "0" "6.28"
+for noise in "22.16" "11.76" "3.41"; do 
     ### run PE
     echo "Noise level ${noise}."
     result_folder="result/hallmarks_of_cancer/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"

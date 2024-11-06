@@ -18,6 +18,7 @@ data_files = {'pubmed': 'data/pubmed/train.csv',
               'cas': 'data/bigbio-datasets/',
               'cls/psytar': '../../data/cls/psytar/original/train-original.jsonl',
               'cls/hallmarks_of_cancer': '../../data/cls/hallmarks_of_cancer/original/train-original.jsonl',
+              'cls/mimic': '../../data/cls/mimic/original/mimic-train-chapter.jsonl',
               }
 parser = argparse.ArgumentParser()
 parser.add_argument("--model_name_or_path", type=str,
