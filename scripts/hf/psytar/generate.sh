@@ -56,7 +56,7 @@ for noise in "0" "20.98" "11.19" "6.01" "3.28"; do
     echo $result_folder
     ### run PE
     python main.py ${args} ${data_checkpoint_args} \
-    --dataset psytar \
+    --dataset cls/psytar \
     --train_data_file data/bigbio-datasets \
     --api ${api} \
     --noise ${noise} \
