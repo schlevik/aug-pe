@@ -16,7 +16,7 @@ select_syn_mode=rank
 #model_type=gpt2  
 # model_type=microsoft/biogpt
 model_type=meta-llama/Llama-3.2-1B-Instruct
-noise=0
+# noise=0
 # noise=22.16 # e=0.5
 # noise=11.76 # e=1
 # noise=6.28 # e=2
@@ -34,8 +34,6 @@ elif [ "$model_type" = "gpt2" ]; then
 else
     batch_size=224
 fi
-
-result_folder="result/hallmarks_of_cancer/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
 
 # ### load datacheckpoint 
 # data_checkpoint_args=""
@@ -60,6 +58,8 @@ result_folder="result/hallmarks_of_cancer/${model_type}_${feat_ext//\//_}/${num_
 for noise in "0" "22.16" "11.76" "6.28" "3.41"; do 
     ### run PE
     echo "Noise level ${noise}."
+    result_folder="result/hallmarks_of_cancer/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
+    echo $result_folder
     python main.py ${args} ${data_checkpoint_args} \
     --dataset cls/hallmarks_of_cancer \
     --train_data_file ../../data/cls/hallmarks_of_cancer/original/train-original.jsonl \

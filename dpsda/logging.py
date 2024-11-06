@@ -4,7 +4,7 @@ import numpy as np
 import csv
 import json
 from dpsda.metrics import calculate_fid, knn_precision_recall_features
-
+from handystuff.loaders import write_jsonl
 
 def setup_logging(log_file):
     log_formatter = logging.Formatter(
@@ -131,6 +131,7 @@ def log_samples(samples, additional_info, folder):
         os.makedirs(folder)
 
     all_data = []
+    all_data_json = []
     for i in range(len(samples)):
         seq = samples[i]
         labels = additional_info[i]
@@ -141,7 +142,13 @@ def log_samples(samples, additional_info, folder):
             else:
                 labels = labels.strip().split("\t")
                 all_data.append([seq]+labels)
-
+                all_data_json.append({"text": seq, "label": [l for ls in labels for l in ls.split('|') if l != 'NoLabel']})
+    if not any(len(l['label']) > 1 for l in all_data_json):
+        for d in all_data_json:
+            d['label'] = d['label'][0]
+            
+    write_jsonl(all_data_json, os.path.join(folder, 'samples.jsonl'))
+    
     if "pubmed" in additional_info[0]:  # unconditional
         title = ['text']
     else:

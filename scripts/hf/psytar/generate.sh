@@ -3,7 +3,7 @@ var_type="psytar_rephrase_tone"
 feat_ext="sentence-t5-base"
 length=64
 temperature=1.4
-num_seed_samples=5000
+num_seed_samples=728
 lookahead_degree=0
 k=6 # number of variations
 L=$((k+1))
@@ -13,7 +13,8 @@ echo generating $num_samples samples
 epochs=20
 word_var_scale=0
 select_syn_mode=rank
-model_type=gpt2  
+# model_type=gpt2
+model_type=meta-llama/Llama-3.2-1B-Instruct  
 noise=0
 args=""
 cls_batch_size=32
@@ -26,9 +27,8 @@ elif [ "$model_type" = "gpt2-medium" ]; then
 elif [ "$model_type" = "gpt2" ]; then
     batch_size=512
 else
-    batch_size=8
+    batch_size=224
 fi
-result_folder="result/psytar/${model_type}_${feat_ext}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
 
 ### load datacheckpoint 
 data_checkpoint_args=""
@@ -44,30 +44,40 @@ else
 fi
 done
 echo load data from ${data_checkpoint_args} ${args}
+# threshold eps 0.5 break_noise 20.980000000003784 eps 0.500092
+# threshold eps 1 break_noise 11.190000000005732 eps 1.000600
+# threshold eps 2 break_noise 6.010000000006762 eps 2.003046
+# threshold eps 4 break_noise 3.2800000000073055 eps 4.004656
 
-### run PE
-python main.py ${args} ${data_checkpoint_args} \
---dataset psytar \
---train_data_file data/bigbio-datasets \
---api ${api} \
---noise ${noise} \
---model_type ${model_type} \
---do_sample  \
---length ${length} \
---random_sampling_batch_size ${batch_size} \
---variation_batch_size ${batch_size} \
---temperature ${temperature} \
---select_syn_mode ${select_syn_mode} \
---num_samples_schedule ${num_samples} \
---combine_divide_L ${L} \
---init_combine_divide_L ${init_L} \
---variation_degree_schedule ${mlm_prob} \
---lookahead_degree ${lookahead_degree} \
---epochs ${epochs} \
---feature_extractor ${feat_ext} \
---feature_extractor_batch_size ${feature_extractor_batch_size} \
---mlm_probability ${mlm_prob} \
---variation_type ${var_type} \
---result_folder ${result_folder} \
---log_online \
---train_data_embeddings_file result/embeddings/sentence-t5-base/psytar_train_all.embeddings.npz
+
+for noise in "0" "20.98" "11.19" "6.01" "3.28"; do 
+    echo "Noise level ${noise}."
+    result_folder="result/psytar/${model_type}_${feat_ext}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
+    echo $result_folder
+    ### run PE
+    python main.py ${args} ${data_checkpoint_args} \
+    --dataset psytar \
+    --train_data_file data/bigbio-datasets \
+    --api ${api} \
+    --noise ${noise} \
+    --model_type ${model_type} \
+    --do_sample  \
+    --length ${length} \
+    --random_sampling_batch_size ${batch_size} \
+    --variation_batch_size ${batch_size} \
+    --temperature ${temperature} \
+    --select_syn_mode ${select_syn_mode} \
+    --num_samples_schedule ${num_samples} \
+    --combine_divide_L ${L} \
+    --init_combine_divide_L ${init_L} \
+    --variation_degree_schedule ${mlm_prob} \
+    --lookahead_degree ${lookahead_degree} \
+    --epochs ${epochs} \
+    --feature_extractor ${feat_ext} \
+    --feature_extractor_batch_size ${feature_extractor_batch_size} \
+    --mlm_probability ${mlm_prob} \
+    --variation_type ${var_type} \
+    --result_folder ${result_folder} \
+    --log_online \
+    --train_data_embeddings_file result/embeddings/sentence-t5-base/psytar_train_all.embeddings.npz
+done
