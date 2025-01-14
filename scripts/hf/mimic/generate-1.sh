@@ -1,9 +1,10 @@
+export CUDA_VISIBLE_DEVICES=1
 mlm_prob=0.5
 var_type="mimic_rephrase_tone"
 feat_ext="kamalkraj/BioSimCSE-BioLinkBERT-BASE"
 length=360
 temperature=1.4
-num_seed_samples=4310
+num_seed_samples=4310 # 30168 / 7
 lookahead_degree=0
 k=6 # number of variations
 L=$((k+1))
@@ -50,9 +51,9 @@ echo load data from ${data_checkpoint_args} ${args}
 # threshold eps 4 break_noise 3.590000000007244 eps 4.009665
 
 # for noise in "0" "23.87" "12.58" "6.68" "3.59"; do 
-for noise in 0; do
+for noise in "23.87"; do
     echo "Noise level ${noise}."
-    result_folder="result/psytar/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
+    result_folder="result/mimic/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
     echo $result_folder
     ### run PE
     python main.py ${args} ${data_checkpoint_args} \

@@ -89,7 +89,7 @@ class HFAPI(API):
             type=str,
             default='rephrase',
             choices=["yelp_rephrase_tone", "openreview_rephrase_tone", "pubmed_rephrase_tone", "cas_paraphrase", 'psytar_rephrase_tone',
-                     'hallmarks_of_cancer_rephrase_tone', "mimic_rephrase_tone"
+                     'hallmarks_of_cancer_rephrase_tone', "mimic_rephrase_tone", "n2c2_2008_rephrase_tone"
                      ],
             help='Which image feature extractor to use')
         parser.add_argument("--mlm_probability", type=float, default=0.5)
@@ -132,7 +132,7 @@ class HFAPI(API):
         
         parser.add_argument("--apply_template", action="store_true",
                             help="Whether to apply a chat template.")
-        print(parser)
+        # print(parser)
         return parser
 
     def text_random_sampling(self, num_samples, prompt_counter=None, lens_dict=None):
@@ -194,6 +194,8 @@ class HFAPI(API):
                     full_prompt_text = get_prompt(prompt, 'hallmarks_of_cancer')
                 elif 'mimic' in self.variation_type:
                     full_prompt_text = get_prompt(prompt, 'mimic')
+                elif 'n2c2_2008' in self.variation_type:
+                    full_prompt_text = get_prompt(prompt, 'n2c2_2008')
                 else:
                     raise NotImplementedError(f"Unknown variation type: {self.variation_type}")
             if self.apply_template:
@@ -214,11 +216,11 @@ class HFAPI(API):
                     full_prompt_text = full_prompt_text.rsplit("<|eot_id|>",1)[0]
                 else:
                     print("Don't have template for this model!")
-            print(full_prompt_text)
+            # print(full_prompt_text)
             inputs = self.tokenizer(full_prompt_text, return_tensors='pt')
-            print(inputs)
+            # print(inputs)
             prompt_input_ids = inputs['input_ids']
-            print(self.tokenizer.batch_decode(prompt_input_ids))
+            # print(self.tokenizer.batch_decode(prompt_input_ids))
             prompt_attn_mask = inputs['attention_mask']
             before_gen_length = len(full_prompt_text)
             if num_seq_to_generate > 0:
@@ -327,10 +329,10 @@ class HFAPI(API):
             prompt = "Veuillez reformuler la phrase suivante en français :\n{} \n".format(sequence)
         # elif variation_type == 'psytar_paraphrase':
         #     prompt = "Veuillez reformuler la phrase suivante en français :\n{} \n".format(sequence)
-        elif variation_type == 'mimic_paraphrase':
+        elif 'mimic' in variation_type or 'n2c2_2008' in variation_type:
             selected_style = random.choice(ALL_MIMIC_TONES)
-            prompt = f"Keeping the information about {label.replace('|', ', ')}, rephrase the note in the following style: {selected_style}"
-        print(prompt)
+            prompt = f"Keeping the information about {label.replace('|', ', ')}, rephrase the note in the following style: {selected_style}.\nNote:\n{sequence}"
+        # print(prompt)
         return prompt
 
     def _text_variation(self, sequences, labels, variation_degree, variation_type, batch_size):

@@ -30,6 +30,9 @@ case $1 in
   --mimic)
     python pre_comp_emb.py --dataset cls/mimic --model_name_or_path 'kamalkraj/BioSimCSE-BioLinkBERT-BASE'
     ;;
+  --n2c2_2008)
+    python pre_comp_emb.py --dataset cls/n2c2_2008 --model_name_or_path 'kamalkraj/BioSimCSE-BioLinkBERT-BASE'
+    ;;
   *)
     echo "Invalid dataset. Available datasets are: --openreview, --pubmed, --yelp, --psytar, --hallmarks_of_cancer"
     exit 1

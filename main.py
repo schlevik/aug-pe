@@ -12,6 +12,33 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
+import re
+
+def shorten_filename(filename):
+    """
+    Converts a filename to a shortened version keeping only capital letters
+    and their following lowercase letter, separated by '|'.
+    
+    Example:
+    'Disease|Infection' -> 'Di|In'
+    """
+    # Split the filename by '|' if it exists
+    parts = filename.split('|')
+    
+    # Process each part
+    shortened_parts = []
+    for part in parts:
+        # Find all occurrences of a capital letter followed by a lowercase letter
+        matches = re.finditer(r'[A-Z][a-z]', part)
+        # Extract all matches
+        shortened = ''.join(match.group() for match in matches)
+        if shortened:
+            shortened_parts.append(shortened)
+    
+    # Join the parts back with '|'
+    return '|'.join(shortened_parts)
+
+
 def main():
     args, api = parse_args()
 
@@ -254,8 +281,13 @@ def main():
 
                 count_fname = class_.replace("\t", "_").replace(
                     " ", "_").replace("&", "").replace(":", "")
-                log_count(sub_count, sub_clean_count,
+                try:
+                    log_count(sub_count, sub_clean_count,
                           f'{args.result_folder}/{t}/count_class/{count_fname}.csv')
+                except OSError as exc:
+                    if exc.errno == 36:
+                        count_fname = shorten_filename(count_fname)
+                        log_count(sub_count, sub_clean_count, f'{args.result_folder}/{t}/count_class/{count_fname}.csv') 
 
                 # Generate new synthetic data
                 selected_syn_samples = [syn_samples[i]

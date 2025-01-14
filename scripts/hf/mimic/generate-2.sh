@@ -1,10 +1,10 @@
+export CUDA_VISIBLE_DEVICES=2
 mlm_prob=0.5
-var_type="psytar_rephrase_tone"
-feat_ext="sentence-t5-base"
-length=64
+var_type="mimic_rephrase_tone"
+feat_ext="kamalkraj/BioSimCSE-BioLinkBERT-BASE"
+length=360
 temperature=1.4
-num_seed_samples=728
-# num_seed_samples=5
+num_seed_samples=4310 # 30168 / 7
 lookahead_degree=0
 k=6 # number of variations
 L=$((k+1))
@@ -28,7 +28,7 @@ elif [ "$model_type" = "gpt2-medium" ]; then
 elif [ "$model_type" = "gpt2" ]; then
     batch_size=512
 else
-    batch_size=192
+    batch_size=128
 fi
 
 ### load datacheckpoint 
@@ -45,20 +45,20 @@ else
 fi
 done
 echo load data from ${data_checkpoint_args} ${args}
-# threshold eps 0.5 break_noise 20.980000000003784 eps 0.500092
-# threshold eps 1 break_noise 11.190000000005732 eps 1.000600
-# threshold eps 2 break_noise 6.010000000006762 eps 2.003046
-# threshold eps 4 break_noise 3.2800000000073055 eps 4.004656
+# threshold eps 0.5 break_noise 23.87000000000321 eps 0.500107
+# threshold eps 1 break_noise 12.580000000005455 eps 1.000450
+# threshold eps 2 break_noise 6.680000000006629 eps 2.000630
+# threshold eps 4 break_noise 3.590000000007244 eps 4.009665
 
-for noise in "0" "20.98" "11.19" "6.01" "3.28"; do 
+# for noise in "0" "23.87" "12.58" "6.68" "3.59"; do 
+for noise in "12.58"; do
     echo "Noise level ${noise}."
-    result_folder="result/psytar/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
+    result_folder="result/mimic/${model_type}_${feat_ext//\//_}/${num_samples}_n${noise}_L${L}_initL${init_L}_var${lookahead_degree}_${var_type}_${select_syn_mode}_len${length}var${word_var_scale}_t${temperature}"
     echo $result_folder
-    mkdir -p $result_folder
     ### run PE
     python main.py ${args} ${data_checkpoint_args} \
-    --dataset cls/psytar \
-    --train_data_file ../../data/cls/psytar/original/train-original.jsonl \
+    --dataset cls/mimic \
+    --train_data_file ../../data/cls/mimic/original/mimic-train-chapter.jsonl \
     --api ${api} \
     --noise ${noise} \
     --model_type ${model_type} \
@@ -80,6 +80,6 @@ for noise in "0" "20.98" "11.19" "6.01" "3.28"; do
     --variation_type ${var_type} \
     --result_folder ${result_folder} \
     --log_online \
-    --apply_template \
-    --train_data_embeddings_file result/embeddings/sentence-t5-base/cls_psytar_train_all.embeddings.npz > $result_folder/output.log 2>&1
+    --train_data_embeddings_file result/embeddings/${feat_ext//\//_}/cls_mimic_train_all.embeddings.npz \
+    --apply_template
 done

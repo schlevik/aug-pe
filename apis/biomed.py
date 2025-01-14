@@ -9,6 +9,8 @@ def get_prompt(prompt, ds_name):
         return get_hoc_prompt(prompt)
     elif ds_name == 'mimic':
         return get_mimic_prompt(prompt)
+    elif ds_name == 'n2c2_2008':
+        return get_n2c2_2008_prompt(prompt)
     raise NotImplementedError()
 
 def get_psytar_prompt(prompt):
@@ -117,3 +119,39 @@ ALL_MIMIC_TONES = [
 "Assessment/Plan Style: Summary with ongoing tasks",
 "Outcome-Oriented: Problems with their resolutions"
 ]
+
+
+def get_n2c2_2008_prompt(prompt):
+    labels = prompt.split("|")
+    styles = """Hospitalist
+Internist
+General Surgeon
+Cardiologist
+Neurologist
+Pulmonologist
+Orthopedic Surgeon
+Psychiatrist
+Intensivist
+Oncologist""".splitlines()
+
+    label_map = [
+            'Asthma',
+            'CAD',
+            'CHF',
+            'Depression',
+            'Diabetes',
+            'GERD',
+            'Gallstones',
+            'Gout',
+            'Hypercholesterolemia',
+            'Hypertension',
+            'Hypertriglyceridemia',
+            'OA',
+            'OSA',
+            'Obesity',
+            'PVD',
+            'Venous Insufficiency'
+    ]
+    label_map = {l:l for l in label_map}
+    style = random.choice(styles)
+    return f"Suppose you're a {style} writing a patient discharge summary of a patient. Mention the following conditions and co-morbidities: {', '.join(label_map.get(l, 'None.') for l in labels)}"
